@@ -47,17 +47,16 @@ function scramble(el, dur = .7) {
     el.textContent = txt.slice(0, r) + txt.slice(r).replace(/[^\s·]/g, () => GLY[Math.random() * GLY.length | 0]); if (k < 1) requestAnimationFrame(f); })(t0);
 }
 
-// ------------------------------------------------ intro (white): three chains build the router, then router, headline and logos fly into the hero
+// ------------------------------------------------ intro (white, no text): three chains build the router, then router and logos fly into the hero
 function intro(done) {
   const el = $('#intro'), force = /[?&]intro/.test(location.search);
-  const seen = !force && (() => { try { return sessionStorage.getItem('0mni3') === '1'; } catch { return false; } })();
+  const seen = !force && (() => { try { return sessionStorage.getItem('0mni4') === '1'; } catch { return false; } })();
   if (reduced || seen) { el.remove(); return done(false); }
   document.body.classList.add('intro'); scrollTo(0, 0); lenis && lenis.stop();
-  const c = $('#ic'), x = c.getContext('2d'), d = Math.min(2, devicePixelRatio || 1); let W, H, cs, ox, oy;
-  const IL = $$('#ilogos .il'), words = $$('#ihead .iw'), head = $('#ihead'), mark = $('#imark'), pct = $('#ipct');
-  const size = () => { W = innerWidth; H = innerHeight; c.width = W * d; c.height = H * d; x.setTransform(d, 0, 0, d, 0, 0);
-    cs = Math.max(3, Math.floor(Math.min(W * .6, H * .4, 430) / RPX.w)); ox = Math.round(W / 2 - (RPX.x0 + RPX.w / 2) * cs); oy = Math.round(H * .4 - (RPX.y0 + RPX.h / 2) * cs);
-    head.style.top = (oy + (RPX.y0 + RPX.h) * cs + Math.max(28, H * .055)) + 'px'; };
+  const c = $('#ic'), x = c.getContext('2d'), d = Math.min(2, devicePixelRatio || 1); let W, H, cs, ox, oy, CY;
+  const IL = $$('#ilogos .il'), bar = $('#ibar b');
+  const size = () => { W = innerWidth; H = innerHeight; c.width = W * d; c.height = H * d; x.setTransform(d, 0, 0, d, 0, 0); CY = H * .46;
+    cs = Math.max(3, Math.floor(Math.min(W * .6, H * .42, 450) / RPX.w)); ox = Math.round(W / 2 - (RPX.x0 + RPX.w / 2) * cs); oy = Math.round(CY - (RPX.y0 + RPX.h / 2) * cs); };
   size(); addEventListener('resize', size);
   // the shadow, cut out of the page's own router image so the hand-off matches pixel for pixel
   const shade = document.createElement('canvas'); shade.width = shade.height = 125; const img = new Image(); img.src = '/assets/router.png';
@@ -67,33 +66,27 @@ function intro(done) {
   const COL = [hex('9945ff'), hex('f0b90b'), hex('8fbf1c')], P = [];
   for (let i = 0; i < RPX.d.length; i++) { const ch = RPX.d[i]; if (ch === '.') continue; const [, l] = RPX.p['ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(ch)];
     const gx = RPX.x0 + i % RPX.w, gy = RPX.y0 + (i / RPX.w | 0); let k = gx < 53 ? 0 : gx < 74 ? 1 : 2; if (Math.random() < .2) k = Math.random() * 3 | 0;
-    P.push({ gx, gy, l: hex(l), k, del: .72 + Math.random() * .75 + (gy - RPX.y0) / RPX.h * .16, dur: .5 + Math.random() * .3, bend: (Math.random() - .5) * .8, sx: null }); }
+    P.push({ gx, gy, l: hex(l), k, del: .62 + Math.random() * .72 + (gy - RPX.y0) / RPX.h * .16, dur: .5 + Math.random() * .3, bend: (Math.random() - .5) * .8, sx: null }); }
   const built = Math.max(...P.map(p => p.del + p.dur));
-  // logos: a row in the middle, then they move out to the three sides and start sending
-  const row = i => [W / 2 + (i - 1) * Math.min(150, W * .27), H * .5];
-  const side = [() => [W * .13, H * .4], () => [W * .5, H * .87], () => [W * .87, H * .4]];
-  IL.forEach((l, i) => { const [a, b] = row(i); gsap.set(l, { xPercent: -50, yPercent: -50, x: a, y: b, opacity: 0, scale: .6 }); });
-  gsap.to(IL, { opacity: 1, scale: 1, duration: .5, ease: 'back.out(2)', stagger: .08, delay: .1 });
-  gsap.to($$('#ilogos .il span'), { opacity: 0, duration: .25, delay: .62, onComplete: () => $$('#ilogos .il span').forEach(s => s.style.display = 'none') });
-  IL.forEach((l, i) => { const [a, b] = side[i](); gsap.to(l, { x: a, y: b, duration: .55, ease: 'power3.inOut', delay: .6 }); });
-  gsap.fromTo(['#itop', '.ic-c', '#skip'], { opacity: 0 }, { opacity: 1, duration: .5, stagger: .04 });
-  const WORD = words.map(w => w.textContent); words.forEach(w => w.textContent = '');
-  let t0 = performance.now(), te = built + 1.15, ex = null, fin = false;
+  // logos: a row in the middle, then out to the three sides to send
+  const row = i => [W / 2 + (i - 1) * Math.min(120, W * .22), CY];
+  const side = [() => [W * .13, CY], () => [W * .5, H * .88], () => [W * .87, CY]];
+  IL.forEach((l, i) => { const [a, b] = row(i); gsap.set(l, { xPercent: -50, yPercent: -50, x: a, y: b, opacity: 0, scale: .4 }); });
+  gsap.to(IL, { opacity: 1, scale: 1, duration: .45, ease: 'back.out(2.2)', stagger: .07, delay: .08 });
+  IL.forEach((l, i) => { const [a, b] = side[i](); gsap.to(l, { x: a, y: b, duration: .5, ease: 'power3.inOut', delay: .48 }); });
+  gsap.to('.ic-c', { opacity: .45, duration: .5, stagger: .05 }); gsap.to('#ibar', { opacity: 1, duration: .4, delay: .3 });
+  let t0 = performance.now(), te = built + .75, ex = null, fin = false;
   const skip = () => { const t = (performance.now() - t0) / 1000; if (t < te) te = Math.max(t, .3); };
   el.addEventListener('pointerdown', skip); addEventListener('keydown', skip, { once: true });
   const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2, e4 = u => u < .5 ? 8 * u ** 4 : 1 - Math.pow(-2 * u + 2, 4) / 2;
   const centre = l => { const r = l.querySelector('svg').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
   function exit() {
-    // put the hero in its final state (still invisible) and measure where everything has to land
-    gsap.set('.hero h1 .wd > span', { yPercent: 0 }); gsap.set('.chainrow', { y: 0, opacity: 1 }); gsap.killTweensOf(IL); $$('#ilogos .il span').forEach(s => s.style.display = 'none'); const L0 = IL.map(centre);
-    const r = $('.router').getBoundingClientRect(); ex = { r, hc: r.width / 125, ox, oy, cs }; P.forEach(p => { if (p.ps) { p.fx = p.px; p.fy = p.py; p.fs = p.ps; } else { [p.fx, p.fy] = L0[p.k]; p.fs = .01; } p.xd = (p.gy - RPX.y0) / RPX.h * .06; });
-    words.forEach((w, i) => w.textContent = WORD[i]);
-    const HW = $$('.hero h1 .wd > span');
-    words.forEach((w, i) => { const a = w.getBoundingClientRect(), b = HW[i].getBoundingClientRect(); gsap.to(w, { x: b.left - a.left, y: b.top - a.top, scale: b.height / a.height, duration: .95, ease: 'expo.inOut', delay: i * .035 }); });
+    gsap.set('.chainrow', { y: 0, opacity: 1 }); gsap.killTweensOf(IL); const L0 = IL.map(centre);
+    const r = $('.router').getBoundingClientRect(); ex = { r, hc: r.width / 125, ox, oy, cs };
+    P.forEach(p => { if (p.ps) { p.fx = p.px; p.fy = p.py; p.fs = p.ps; } else { [p.fx, p.fy] = L0[p.k]; p.fs = .01; } p.xd = (p.gy - RPX.y0) / RPX.h * .06; });
     const CR = $$('.chainrow svg');
     IL.forEach((l, i) => { const a = l.querySelector('svg').getBoundingClientRect(), b = CR[i].getBoundingClientRect(); gsap.set(l, { scale: 1, opacity: 1, transformOrigin: '0 0' }); gsap.to(l, { x: '+=' + (b.left - a.left), y: '+=' + (b.top - a.top), scale: b.width / a.width, duration: .95, ease: 'expo.inOut', delay: .05 + i * .04 }); });
-    gsap.to(mark, { scaleX: 0, transformOrigin: '100% 50%', duration: .3, ease: 'power2.in' });
-    gsap.to(['#itop', '.ic-c', '#skip', '#ipct'], { opacity: 0, duration: .25 });
+    gsap.to(['.ic-c', '#ibar'], { opacity: 0, duration: .25 });
   }
   function frame(now) {
     if (fin) return; const t = (now - t0) / 1000; x.clearRect(0, 0, W, H);
@@ -101,12 +94,12 @@ function intro(done) {
     const xt = ex ? t - te : -1, L = IL.map(centre);
     // dot grid, darkening along the ring when the router is complete
     const sw = t - built, R = sw * 1300, ga = ex ? Math.max(0, 1 - xt * 2.5) : Math.min(1, t * 2);
-    if (ga > 0) for (let gy = 14; gy < H; gy += 26) for (let gx = 14; gx < W; gx += 26) { let a = .13; if (sw > 0 && sw < 1.4) { const dd = Math.abs(Math.hypot(gx - W / 2, gy - H * .4) - R); if (dd < 44) a += (1 - dd / 44) * .5 * (1 - sw / 1.4); }
+    if (ga > 0) for (let gy = 14; gy < H; gy += 26) for (let gx = 14; gx < W; gx += 26) { let a = .13; if (sw > 0 && sw < 1.4) { const dd = Math.abs(Math.hypot(gx - W / 2, gy - CY) - R); if (dd < 44) a += (1 - dd / 44) * .5 * (1 - sw / 1.4); }
       x.fillStyle = `rgba(20,20,24,${a * ga})`; x.fillRect(gx, gy, 1.6, 1.6); }
-    if (sw > 0 && sw < 1 && !ex) { x.strokeStyle = `rgba(20,20,24,${.22 * (1 - sw)})`; x.lineWidth = 1.5; x.beginPath(); x.arc(W / 2, H * .4, R, 0, 7); x.stroke(); }
+    if (sw > 0 && sw < 1 && !ex) { x.strokeStyle = `rgba(20,20,24,${.22 * (1 - sw)})`; x.lineWidth = 1.5; x.beginPath(); x.arc(W / 2, CY, R, 0, 7); x.stroke(); }
     // the long shadow sweeps out once the router stands, and travels with it on exit
-    const sk = clamp((t - built + .05) / .55); if (sk > 0 && shade.width) {
-      let sox = ox, soy = oy, scs = cs; if (ex) { const u = e4(clamp((xt - .04) / .9)); sox = ex.ox + (ex.r.left - ex.ox) * u; soy = ex.oy + (ex.r.top - ex.oy) * u; scs = ex.cs + (ex.hc - ex.cs) * u; }
+    const sk = clamp((t - built + .05) / .5); if (sk > 0) {
+      let sox = ox, soy = oy, scs = cs; if (ex) { const u = e4(clamp((xt - .03) / .9)); sox = ex.ox + (ex.r.left - ex.ox) * u; soy = ex.oy + (ex.r.top - ex.oy) * u; scs = ex.cs + (ex.hc - ex.cs) * u; }
       x.save(); x.beginPath(); const s0 = (RPX.x0 + RPX.y0 + 30) * scs + (250 - RPX.x0 - RPX.y0 - 30) * scs * (ex ? 1 : ease(sk)); x.moveTo(sox, soy); x.lineTo(sox + s0, soy); x.lineTo(sox, soy + s0); x.closePath(); x.clip();
       x.imageSmoothingEnabled = false; x.drawImage(shade, sox, soy, 125 * scs, 125 * scs); x.restore(); }
     // pixels
@@ -125,20 +118,15 @@ function intro(done) {
     x.lineWidth = 1.3; streak.forEach((a, k) => { if (!a.length) return; x.strokeStyle = `rgba(${COL[k]},.4)`; x.beginPath(); for (let i = 0; i < a.length; i += 4) { x.moveTo(a[i], a[i + 1]); x.lineTo(a[i] + (a[i] - a[i + 2]) * 2.6, a[i + 1] + (a[i + 1] - a[i + 3]) * 2.6); } x.stroke(); });
     // antenna tips ping once it stands
     if (sw > 0 && !ex) [[47, 28.5, 0], [62, 22.5, 1], [77, 28.5, 2]].forEach(([gx, gy, k], i) => { const ph = (sw * .9 + i * .33) % 1; x.strokeStyle = `rgba(${COL[k]},${.85 * (1 - ph)})`; x.lineWidth = 2; x.beginPath(); x.arc(ox + gx * cs, oy + gy * cs, cs * (2 + ph * 12), 0, 7); x.stroke(); });
-    // routing counter, headline decode, lime marker under "no trace."
-    if (!ex) { pct.textContent = 'routing ' + String(Math.round(landed / P.length * 100)).padStart(3, '0') + '%';
-      const k = clamp((t - built + .3) / .75); let n = Math.floor(k * WORD.join(' ').length);
-      words.forEach((w, i) => { const s = WORD[i], r = Math.max(0, Math.min(s.length, n)); n -= s.length + 1; w.textContent = k <= 0 ? '' : s.slice(0, r) + s.slice(r).replace(/./g, () => GLY[Math.random() * GLY.length | 0]); });
-      if (t > built + .5 && !mark.dataset.on) { mark.dataset.on = 1; const hr = head.getBoundingClientRect(), a = words[2].getBoundingClientRect(), b = words[3].getBoundingClientRect();
-        Object.assign(mark.style, { left: (a.left - hr.left - 6) + 'px', width: (b.right - a.left + 12) + 'px', top: (a.top - hr.top + a.height * .55) + 'px', height: (a.height * .38) + 'px' }); gsap.to(mark, { scaleX: 1, duration: .4, ease: 'power3.out' }); } }
-    // hand-over: everything is in its hero spot, so swap the intro for the real page in one frame
+    if (!ex) bar.style.transform = `scaleX(${landed / P.length})`;
+    // hand-over: router and logos are in their hero spots, so swap the intro for the real page in one frame
     if (ex && xt > 1.02) { fin = true; removeEventListener('resize', size);
-      const hold = $$('.router, .hero h1, .chainrow'); hold.forEach(e => e.style.transition = 'none');
-      document.body.classList.remove('intro'); void document.body.offsetHeight; el.remove(); lenis && lenis.start(); try { sessionStorage.setItem('0mni3', '1'); } catch { }
+      const hold = $$('.router, .chainrow'); hold.forEach(e => e.style.transition = 'none');
+      document.body.classList.remove('intro'); void document.body.offsetHeight; el.remove(); lenis && lenis.start(); try { sessionStorage.setItem('0mni4', '1'); } catch { }
       requestAnimationFrame(() => hold.forEach(e => e.style.transition = '')); done(true); return; }
     requestAnimationFrame(frame);
   }
-  (document.fonts ? document.fonts.load('700 40px JB') : Promise.resolve()).catch(() => { }).then(() => { t0 = performance.now(); requestAnimationFrame(frame); });
+  requestAnimationFrame(n => { t0 = n; frame(n); });
 }
 
 // ------------------------------------------------ hero numbers
@@ -146,7 +134,7 @@ function counters() { $$('.hstats b').forEach((b, i) => { const n = +b.dataset.n
 
 // ------------------------------------------------ reveals, magnetic buttons, tilt, cursor
 function motion(fromIntro) {
-  if (fromIntro) gsap.set('.hero h1 .wd > span', { yPercent: 0 }); else gsap.to('.hero h1 .wd > span', { yPercent: 0, duration: 1.1, ease: 'expo.out', stagger: .07 });
+  gsap.to('.hero h1 .wd > span', { yPercent: 0, duration: 1.1, ease: 'expo.out', stagger: .07, delay: fromIntro ? .05 : 0 });
   ScrollTrigger.batch('.rv', { start: 'top 90%', once: true, onEnter: els => gsap.to(els, { opacity: 1, y: 0, duration: 1, ease: 'expo.out', stagger: .08 }) });
   $$('.split').forEach(h => { if (h.closest('.hero')) return; gsap.to(h.querySelectorAll('.wd > span'), { yPercent: 0, duration: 1, ease: 'expo.out', stagger: .05, scrollTrigger: { trigger: h, start: 'top 88%', once: true } }); });
   $$('.eyebrow').forEach(e => ScrollTrigger.create({ trigger: e, start: 'top 92%', once: true, onEnter: () => scramble(e) }));
@@ -154,6 +142,7 @@ function motion(fromIntro) {
   ScrollTrigger.addEventListener('scrollEnd', () => $$('.rv').forEach(el => { if (+getComputedStyle(el).opacity < .05 && el.getBoundingClientRect().top < innerHeight) gsap.to(el, { opacity: 1, y: 0, duration: .8, ease: 'expo.out' }); }));
   gsap.to('.router', { yPercent: -8, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
   gsap.to('.code-bg', { yPercent: 12, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+  gsap.fromTo('#bigw', { backgroundSize: '0% 100%' }, { backgroundSize: '100% 100%', ease: 'none', scrollTrigger: { trigger: '#bigw', start: 'top bottom', end: 'max', scrub: true } });
   gsap.fromTo('#rlFill', { scaleX: 0 }, { scaleX: 1, ease: 'none', scrollTrigger: { trigger: '#road', start: 'top 80%', end: 'bottom 60%', scrub: true } });
   ['#opsec', '#cta'].forEach(s => gsap.fromTo(s, { clipPath: 'inset(0% 4% 0% 4% round 44px)' }, { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'none', scrollTrigger: { trigger: s, start: 'top bottom', end: 'top 20%', scrub: true } }));
   if (fine && !reduced) {
