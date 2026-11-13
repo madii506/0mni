@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#f4f4f6">
 <link rel="icon" href="/favicon.png">
 <link rel="preload" href="/assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/omni.css?v=4">
+<link rel="stylesheet" href="/assets/omni.css?v=5">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -26,11 +26,8 @@
 
 <div id="intro" aria-hidden="true">
   <canvas id="ic"></canvas>
-  <i class="ic-c tl"></i><i class="ic-c tr"></i><i class="ic-c bl"></i><i class="ic-c br"></i>
   <div id="ilogos"><div class="il"><svg class="lg sol"><use href="#l-sol"/></svg></div><div class="il"><svg class="lg bnb"><use href="#l-bnb"/></svg></div><div class="il"><svg class="lg hood"><use href="#l-hood"/></svg></div></div>
-  <i id="ibar"><b></b></i>
 </div>
-<div id="cur" aria-hidden="true"><i></i></div>
 <div id="prog"></div>
 
 <header class="nav" id="nav">
@@ -45,7 +42,7 @@
     <a href="#faq" data-go="faq">faq</a>
   </nav>
   <div class="nr">
-    <a class="btn sm dark mag" href="https://pr1v.vercel.app" target="_blank" rel="noopener">scan a wallet ↗</a>
+    <a class="btn sm dark mag" href="#opsec" data-go="opsec">scan a wallet</a>
     <button class="burger" id="burger" aria-label="menu"><i></i><i></i></button>
   </div>
 </header>
@@ -59,7 +56,7 @@
         <p class="kicker rv"><span class="dot s"></span><span class="dot b"></span><span class="dot h"></span>the private terminal for every chain</p>
         <h1 class="split">every chain.<br>no trace.</h1>
         <p class="lead rv">Launch and trade on Solana, BNB Chain and Robinhood Chain from one terminal, without the snipers seeing you coming and without your launch wallet pointing back to you.</p>
-        <div class="ctas rv"><a class="btn dark mag" href="#how" data-go="how">how it works</a><a class="btn mag" href="https://pr1v.vercel.app" target="_blank" rel="noopener">scan your wallet ↗</a></div>
+        <div class="ctas rv"><a class="btn dark mag" href="#how" data-go="how">how it works</a><a class="btn mag" href="#opsec" data-go="opsec">scan your wallet</a></div>
         <div class="chainrow rv">
           <span><svg class="lg sol"><use href="#l-sol"/></svg>Solana</span>
           <span><svg class="lg bnb"><use href="#l-bnb"/></svg>BNB Chain</span>
@@ -152,7 +149,7 @@
       <ol class="steps" id="steps">
         <li class="on" data-i="0"><b>pick a chain</b><span>Solana, BNB Chain or Robinhood Chain. Same commands on every one.</span></li>
         <li data-i="1"><b>make a burner</b><span>A fresh launch wallet is created in your browser. Only you ever hold its keys.</span></li>
-        <li data-i="2"><b>check it first</b><span>The pr1v opsec engine scans it before you sign. If it points back to your main, you see it.</span></li>
+        <li data-i="2"><b>check it first</b><span>The 0mni opsec scan checks it before you sign. If it points back to your main, you see it.</span></li>
         <li data-i="3"><b>launch in one go</b><span>Launch and first buy go out together through a private route, so there is nothing to snipe.</span></li>
         <li data-i="4"><b>trade off the radar</b><span>Every buy and sell takes the same private route. No public queue, no sandwich.</span></li>
       </ol>
@@ -210,19 +207,22 @@
     <div class="wrap op">
       <div>
         <p class="eyebrow rv">04 · opsec engine</p>
-        <h2 class="split">built on pr1v.</h2>
-        <p class="sub rv">0mni checks every wallet with the same engine that runs pr1v. It is live today on Solana. Paste any wallet and see what it gives away.</p>
+        <h2 class="split">scan any wallet.</h2>
+        <p class="sub rv">0mni checks every burner before you sign with it. The scan is live today on Solana. Paste any wallet and see what it gives away.</p>
         <form class="scan rv" id="scanF"><input id="scanI" placeholder="paste any Solana wallet" spellcheck="false" autocomplete="off" aria-label="Solana wallet"><button class="btn lime mag">scan ↗</button></form>
-        <p class="note rv">opens pr1v.vercel.app in a new tab. nothing you scan is stored.</p>
+        <p class="note rv">runs right here, in about ten seconds. read-only. nothing you scan is stored.</p>
       </div>
-      <ul class="checks">
-        <li class="rv"><b>names</b><span>.sol names pointing at the wallet</span></li>
-        <li class="rv"><b>funding</b><span>where its first SOL came from, and whether that was an exchange</span></li>
-        <li class="rv"><b>clock</b><span>the hours it sleeps, and the timezone that gives away</span></li>
-        <li class="rv"><b>clusters</b><span>wallets it pays directly, which read as one owner</span></li>
-        <li class="rv"><b>bags</b><span>everything anyone can see it holds</span></li>
-        <li class="rv"><b>dev trail</b><span>coins it launched, and what happened to them</span></li>
-      </ul>
+      <div class="rep">
+        <div class="sumr" id="sumr"></div>
+        <ul class="checks">
+          <li class="rv" data-k="names"><b>names</b><div><span class="q">.sol names pointing at the wallet</span><span class="a"></span></div></li>
+          <li class="rv" data-k="funding"><b>funding</b><div><span class="q">where its first SOL came from, and whether that was an exchange</span><span class="a"></span></div></li>
+          <li class="rv" data-k="clock"><b>clock</b><div><span class="q">the hours it sleeps, and the timezone that gives away</span><span class="a"></span></div></li>
+          <li class="rv" data-k="clusters"><b>clusters</b><div><span class="q">wallets it pays directly, which read as one owner</span><span class="a"></span></div></li>
+          <li class="rv" data-k="bags"><b>bags</b><div><span class="q">everything anyone can see it holds</span><span class="a"></span></div></li>
+          <li class="rv" data-k="trail"><b>dev trail</b><div><span class="q">coins it launched, and what happened to them</span><span class="a"></span></div></li>
+        </ul>
+      </div>
     </div>
   </section>
 
@@ -231,7 +231,7 @@
     <div class="wrap">
       <p class="eyebrow rv">05 · live</p>
       <h2 class="split">the trenches, right now.</h2>
-      <p class="sub rv">New pump.fun launches as they land, with what is public about each dev. Live from Solana through pr1v. BNB Chain and Robinhood Chain join as their routes ship.</p>
+      <p class="sub rv">New pump.fun launches as they land, with what is public about each dev. Live from Solana. Tap any row to scan its dev. BNB Chain and Robinhood Chain join as their routes ship.</p>
       <div class="livegrid rv">
         <div class="lcol main">
           <div class="lh"><svg class="lg sol"><use href="#l-sol"/></svg><b>Solana</b><span class="pill on"><i></i>live</span><span class="ts" id="lts"></span></div>
@@ -266,7 +266,7 @@
       <h2 class="split">Solana first. then everything.</h2>
       <div class="road" id="road">
         <div class="rl"><i id="rlFill"></i></div>
-        <div class="rs rv on"><span class="rn">live</span><b>opsec engine</b><p>Wallet scans, funding traces and live trenches on Solana, running in pr1v today.</p></div>
+        <div class="rs rv on"><span class="rn">live</span><b>opsec engine</b><p>Wallet scans, funding traces and live trenches on Solana, live on this page today.</p></div>
         <div class="rs rv"><span class="rn">phase 1</span><b>Solana terminal</b><p>Burners, opsec preflight, pump.fun launches and trades through Jito bundles.</p></div>
         <div class="rs rv"><span class="rn">phase 2</span><b>BNB Chain</b><p>four.meme launches and trades through a private RPC.</p></div>
         <div class="rs rv"><span class="rn">phase 3</span><b>Robinhood Chain</b><p>Pons launches and trades on the rollup.</p></div>
@@ -283,7 +283,7 @@
       <p class="sub rv">Short answers. If something here is not true yet, it says so.</p></div>
       <div class="faq" id="faqL">
         <details class="rv"><summary>what is 0mni?</summary><p>A private terminal for launching and trading memecoins on Solana, BNB Chain and Robinhood Chain. It makes fresh launch wallets, checks them for links to you, and sends every launch and trade through a private route so bots cannot see it coming.</p></details>
-        <details class="rv"><summary>what is live today?</summary><p>The opsec engine and the live Solana trenches, through pr1v. The launch and trade terminal ships chain by chain, Solana first. The roadmap above is the order.</p></details>
+        <details class="rv"><summary>what is live today?</summary><p>The opsec scan and the live Solana trenches, both on this page. The launch and trade terminal ships chain by chain, Solana first. The roadmap above is the order.</p></details>
         <details class="rv"><summary>does 0mni hold my keys or funds?</summary><p>No. Burners are generated in your browser and you sign everything in your own wallet. 0mni never custodies anything.</p></details>
         <details class="rv"><summary>can it make my wallet fully anonymous?</summary><p>No tool can. A burner is only as private as the money that funds it. If it comes from your main, the two are linked, and 0mni shows you that before you sign.</p></details>
         <details class="rv"><summary>is this a mixer?</summary><p>No. 0mni never pools, mixes or moves funds for anyone. It hides pending transactions from bots and tells you what your wallets give away.</p></details>
@@ -298,26 +298,17 @@
       <p class="eyebrow rv">09 · go</p>
       <h2 class="split">stop launching<br>in public.</h2>
       <p class="sub rv">Start with the part that is live: see what your wallet already gives away.</p>
-      <div class="ctas rv"><a class="btn lime mag" href="https://pr1v.vercel.app" target="_blank" rel="noopener">scan your wallet ↗</a><a class="btn ghost mag" href="#how" data-go="how">how it works</a></div>
+      <div class="ctas rv"><a class="btn lime mag" href="#opsec" data-go="opsec">scan your wallet</a><a class="btn ghost mag" href="#how" data-go="how">how it works</a></div>
     </div>
   </section>
 </main>
 
 <footer class="foot">
-  <div class="wrap">
-    <div class="fgrid">
-      <div class="fb"><a class="brand" href="#top" data-go="top"><img src="/icon.png" alt=""><b>0mni</b></a><p>The private terminal for every chain. Launch and trade on Solana, BNB Chain and Robinhood Chain without the snipers seeing you.</p></div>
-      <div class="fc"><small>site</small><a href="#how" data-go="how">how it works</a><a href="#routes" data-go="routes">routes</a><a href="#opsec" data-go="opsec">opsec</a><a href="#live" data-go="live">live</a></div>
-      <div class="fc"><small>more</small><a href="#roadmap" data-go="roadmap">roadmap</a><a href="#faq" data-go="faq">faq</a><a href="https://pr1v.vercel.app" target="_blank" rel="noopener">pr1v ↗</a><a href="#top" data-go="top">back to top ↑</a></div>
-      <div class="fc"><small>chains</small><span><svg class="lg sol"><use href="#l-sol"/></svg>Solana</span><span><svg class="lg bnb"><use href="#l-bnb"/></svg>BNB Chain</span><span><svg class="lg hood"><use href="#l-hood"/></svg>Robinhood Chain</span></div>
-    </div>
-    <div class="big" id="bigw" aria-hidden="true">0mni</div>
-    <div class="fr"><span>every chain. no trace.</span><span>independent · not affiliated with any chain or launchpad · $0MNI is a memecoin, not financial advice</span></div>
-  </div>
+  <div class="wrap"><div class="big" id="bigw" aria-hidden="true">0mni</div></div>
 </footer>
 <script src="/assets/vendor/gsap.min.js"></script>
 <script src="/assets/vendor/ScrollTrigger.min.js"></script>
 <script src="/assets/vendor/lenis.min.js"></script>
-<script src="/assets/omni.js?v=4"></script>
+<script src="/assets/omni.js?v=5"></script>
 </body>
 </html>
