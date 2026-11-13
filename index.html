@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#f4f4f6">
 <link rel="icon" href="/favicon.png">
 <link rel="preload" href="/assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/omni.css?v=3">
+<link rel="stylesheet" href="/assets/omni.css?v=4">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -27,10 +27,8 @@
 <div id="intro" aria-hidden="true">
   <canvas id="ic"></canvas>
   <i class="ic-c tl"></i><i class="ic-c tr"></i><i class="ic-c bl"></i><i class="ic-c br"></i>
-  <div id="itop"><span>0mni · private router</span><span id="ipct">routing 000%</span></div>
-  <div id="ilogos"><div class="il"><svg class="lg sol"><use href="#l-sol"/></svg><span>solana</span></div><div class="il"><svg class="lg bnb"><use href="#l-bnb"/></svg><span>bnb chain</span></div><div class="il"><svg class="lg hood"><use href="#l-hood"/></svg><span>robinhood</span></div></div>
-  <div id="ihead"><i id="imark"></i><span class="iw">every</span> <span class="iw">chain.</span> <span class="iw">no</span> <span class="iw">trace.</span></div>
-  <button id="skip" type="button">skip ›</button>
+  <div id="ilogos"><div class="il"><svg class="lg sol"><use href="#l-sol"/></svg></div><div class="il"><svg class="lg bnb"><use href="#l-bnb"/></svg></div><div class="il"><svg class="lg hood"><use href="#l-hood"/></svg></div></div>
+  <i id="ibar"><b></b></i>
 </div>
 <div id="cur" aria-hidden="true"><i></i></div>
 <div id="prog"></div>
@@ -239,11 +237,9 @@
           <div class="lh"><svg class="lg sol"><use href="#l-sol"/></svg><b>Solana</b><span class="pill on"><i></i>live</span><span class="ts" id="lts"></span></div>
           <div class="lrows" id="lrows"><p class="muted">reading pump.fun…</p></div>
         </div>
-        <div class="lcol next">
-          <div class="lh"><svg class="lg bnb"><use href="#l-bnb"/></svg><b>BNB Chain</b><span class="pill">next</span></div>
-          <p class="muted">four.meme launches land here once the BNB route is live.</p>
-          <div class="lh"><svg class="lg hood"><use href="#l-hood"/></svg><b>Robinhood Chain</b><span class="pill">next</span></div>
-          <p class="muted">Pons launches land here once the Robinhood Chain route is live.</p>
+        <div class="lnext">
+          <div class="lcol next"><div class="lh"><svg class="lg bnb"><use href="#l-bnb"/></svg><b>BNB Chain</b><span class="pill">next</span></div><p class="muted">four.meme launches land here once the BNB route is live.</p><div class="nf"><span><small>launchpad</small>four.meme</span><span><small>route</small>private RPC</span><span><small>roadmap</small>phase 2</span></div><svg class="wm bnb"><use href="#l-bnb"/></svg></div>
+          <div class="lcol next"><div class="lh"><svg class="lg hood"><use href="#l-hood"/></svg><b>Robinhood Chain</b><span class="pill">next</span></div><p class="muted">Pons launches land here once the Robinhood Chain route is live.</p><div class="nf"><span><small>launchpad</small>Pons</span><span><small>route</small>the sequencer</span><span><small>roadmap</small>phase 3</span></div><svg class="wm hood"><use href="#l-hood"/></svg></div>
         </div>
       </div>
     </div>
@@ -255,10 +251,10 @@
       <p class="eyebrow rv">06 · what 0mni never does</p>
       <h2 class="split">private is not shady.</h2>
       <div class="grid4">
-        <div class="nv rv"><b>never holds your keys</b><span>Burners are made in your browser. You sign every transaction in your own wallet.</span></div>
-        <div class="nv rv"><b>never mixes funds</b><span>0mni hides pending transactions from bots. It does not launder anything, ever.</span></div>
-        <div class="nv rv"><b>never hides a dev's bag</b><span>No splitting one dev's buys across hidden wallets. Buyers can always see what the dev holds.</span></div>
-        <div class="nv rv"><b>never pretends</b><span>A burner funded from your main is still linked. 0mni tells you instead of hiding it.</span></div>
+        <div class="nv tilt rv"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4"/><path d="M10.5 12.5 20 3M16.5 6.5l3 3M13.5 9.5l2 2"/></svg></span><b>never holds your keys</b><span>Burners are made in your browser. You sign every transaction in your own wallet.</span></div>
+        <div class="nv tilt rv"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h4l10 10h4M3 17h4l3-3M14 10l3-3h4M18 4l3 3-3 3M18 14l3 3-3 3"/></svg></span><b>never mixes funds</b><span>0mni hides pending transactions from bots. It does not launder anything, ever.</span></div>
+        <div class="nv tilt rv"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><b>never hides a dev's bag</b><span>No splitting one dev's buys across hidden wallets. Buyers can always see what the dev holds.</span></div>
+        <div class="nv tilt rv"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></span><b>never pretends</b><span>A burner funded from your main is still linked. 0mni tells you instead of hiding it.</span></div>
       </div>
     </div>
   </section>
@@ -309,16 +305,19 @@
 
 <footer class="foot">
   <div class="wrap">
-    <div class="big" aria-hidden="true">0mni</div>
-    <div class="fr">
-      <span>every chain. no trace.</span>
-      <span class="fl"><a href="https://pr1v.vercel.app" target="_blank" rel="noopener">pr1v ↗</a></span>
+    <div class="fgrid">
+      <div class="fb"><a class="brand" href="#top" data-go="top"><img src="/icon.png" alt=""><b>0mni</b></a><p>The private terminal for every chain. Launch and trade on Solana, BNB Chain and Robinhood Chain without the snipers seeing you.</p></div>
+      <div class="fc"><small>site</small><a href="#how" data-go="how">how it works</a><a href="#routes" data-go="routes">routes</a><a href="#opsec" data-go="opsec">opsec</a><a href="#live" data-go="live">live</a></div>
+      <div class="fc"><small>more</small><a href="#roadmap" data-go="roadmap">roadmap</a><a href="#faq" data-go="faq">faq</a><a href="https://pr1v.vercel.app" target="_blank" rel="noopener">pr1v ↗</a><a href="#top" data-go="top">back to top ↑</a></div>
+      <div class="fc"><small>chains</small><span><svg class="lg sol"><use href="#l-sol"/></svg>Solana</span><span><svg class="lg bnb"><use href="#l-bnb"/></svg>BNB Chain</span><span><svg class="lg hood"><use href="#l-hood"/></svg>Robinhood Chain</span></div>
     </div>
+    <div class="big" id="bigw" aria-hidden="true">0mni</div>
+    <div class="fr"><span>every chain. no trace.</span><span>independent · not affiliated with any chain or launchpad · $0MNI is a memecoin, not financial advice</span></div>
   </div>
 </footer>
 <script src="/assets/vendor/gsap.min.js"></script>
 <script src="/assets/vendor/ScrollTrigger.min.js"></script>
 <script src="/assets/vendor/lenis.min.js"></script>
-<script src="/assets/omni.js?v=3"></script>
+<script src="/assets/omni.js?v=4"></script>
 </body>
 </html>
