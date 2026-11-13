@@ -47,75 +47,95 @@ function scramble(el, dur = .7) {
     el.textContent = txt.slice(0, r) + txt.slice(r).replace(/[^\s·]/g, () => GLY[Math.random() * GLY.length | 0]); if (k < 1) requestAnimationFrame(f); })(t0);
 }
 
-// ------------------------------------------------ intro: three chains assemble the router, then it flies into the page
+// ------------------------------------------------ intro (white): three chains build the router, then router, headline and logos fly into the hero
 function intro(done) {
   const el = $('#intro'), force = /[?&]intro/.test(location.search);
-  const seen = !force && (() => { try { return sessionStorage.getItem('0mni2') === '1'; } catch { return false; } })();
-  if (reduced || seen) { el.remove(); return done(); }
+  const seen = !force && (() => { try { return sessionStorage.getItem('0mni3') === '1'; } catch { return false; } })();
+  if (reduced || seen) { el.remove(); return done(false); }
   document.body.classList.add('intro'); scrollTo(0, 0); lenis && lenis.stop();
   const c = $('#ic'), x = c.getContext('2d'), d = Math.min(2, devicePixelRatio || 1); let W, H, cs, ox, oy;
+  const IL = $$('#ilogos .il'), words = $$('#ihead .iw'), head = $('#ihead'), mark = $('#imark'), pct = $('#ipct');
   const size = () => { W = innerWidth; H = innerHeight; c.width = W * d; c.height = H * d; x.setTransform(d, 0, 0, d, 0, 0);
-    cs = Math.max(3, Math.floor(Math.min(W * .62, H * .44, 470) / RPX.w)); ox = Math.round(W / 2 - (RPX.x0 + RPX.w / 2) * cs); oy = Math.round(H * .4 - (RPX.y0 + RPX.h / 2) * cs);
-    $('#ihead').style.top = (oy + (RPX.y0 + RPX.h) * cs + Math.max(26, H * .05)) + 'px'; };
+    cs = Math.max(3, Math.floor(Math.min(W * .6, H * .4, 430) / RPX.w)); ox = Math.round(W / 2 - (RPX.x0 + RPX.w / 2) * cs); oy = Math.round(H * .4 - (RPX.y0 + RPX.h / 2) * cs);
+    head.style.top = (oy + (RPX.y0 + RPX.h) * cs + Math.max(28, H * .055)) + 'px'; };
   size(); addEventListener('resize', size);
-  const CH = [{ c: hex('9945ff'), o: () => [W * .13, H * .22] }, { c: hex('f0b90b'), o: () => [W * .5, H * .93] }, { c: hex('b8e600'), o: () => [W * .87, H * .22] }];
-  const logos = ['sol', 'bnb', 'hood'].map(k => new Path2D(document.querySelector('#l-' + k + ' path').getAttribute('d')));
-  const P = []; const WH = [255, 255, 255];
-  for (let i = 0; i < RPX.d.length; i++) { const ch = RPX.d[i]; if (ch === '.') continue; const pi = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(ch), [n, l] = RPX.p[pi];
-    const gx = RPX.x0 + i % RPX.w, gy = RPX.y0 + (i / RPX.w | 0); let k = gx < 53 ? 0 : gx < 74 ? 1 : 2; if (Math.random() < .22) k = Math.random() * 3 | 0;
-    P.push({ gx, gy, n: hex(n), l: hex(l), k, del: .5 + Math.random() * .85 + (gy - RPX.y0) / RPX.h * .18, dur: .6 + Math.random() * .3, bend: (Math.random() - .5) * .9, px: 0, py: 0 }); }
+  // the shadow, cut out of the page's own router image so the hand-off matches pixel for pixel
+  const shade = document.createElement('canvas'); shade.width = shade.height = 125; const img = new Image(); img.src = '/assets/router.png';
+  img.onload = () => { const s = shade.getContext('2d'); s.imageSmoothingEnabled = false; s.drawImage(img, 0, 0, 125, 125); const id = s.getImageData(0, 0, 125, 125);
+    for (let i = 3; i < id.data.length; i += 4) if (id.data[i] > 200) id.data[i] = 0; s.putImageData(id, 0, 0); };
+  // pixels: each one leaves a chain logo in that chain's colour and lands as graphite
+  const COL = [hex('9945ff'), hex('f0b90b'), hex('8fbf1c')], P = [];
+  for (let i = 0; i < RPX.d.length; i++) { const ch = RPX.d[i]; if (ch === '.') continue; const [, l] = RPX.p['ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(ch)];
+    const gx = RPX.x0 + i % RPX.w, gy = RPX.y0 + (i / RPX.w | 0); let k = gx < 53 ? 0 : gx < 74 ? 1 : 2; if (Math.random() < .2) k = Math.random() * 3 | 0;
+    P.push({ gx, gy, l: hex(l), k, del: .72 + Math.random() * .75 + (gy - RPX.y0) / RPX.h * .16, dur: .5 + Math.random() * .3, bend: (Math.random() - .5) * .8, sx: null }); }
   const built = Math.max(...P.map(p => p.del + p.dur));
-  const BOOT = [['0mni · private router', 'h'], ['> link solana ....... jito block engine  ', 'ok', 'ok'], ['> link bnb chain .... private rpc        ', 'ok', 'ok'], ['> link robinhood .... sequencer          ', 'ok', 'ok'], ['> public mempool .... ', 'n', 'skipped'], ['> trace ............. ', 'ok', 'null']];
-  const WORD = 'every chain. no trace.', iw = $('#iword'), boot = $('#boot');
-  let t0 = performance.now(), te = built + 1.25, ex = null, fin = false, called = false, blocks = null;
-  const skip = () => { const t = (performance.now() - t0) / 1000; if (t < te) te = t; };
+  // logos: a row in the middle, then they move out to the three sides and start sending
+  const row = i => [W / 2 + (i - 1) * Math.min(150, W * .27), H * .5];
+  const side = [() => [W * .13, H * .4], () => [W * .5, H * .87], () => [W * .87, H * .4]];
+  IL.forEach((l, i) => { const [a, b] = row(i); gsap.set(l, { xPercent: -50, yPercent: -50, x: a, y: b, opacity: 0, scale: .6 }); });
+  gsap.to(IL, { opacity: 1, scale: 1, duration: .5, ease: 'back.out(2)', stagger: .08, delay: .1 });
+  gsap.to($$('#ilogos .il span'), { opacity: 0, duration: .25, delay: .62, onComplete: () => $$('#ilogos .il span').forEach(s => s.style.display = 'none') });
+  IL.forEach((l, i) => { const [a, b] = side[i](); gsap.to(l, { x: a, y: b, duration: .55, ease: 'power3.inOut', delay: .6 }); });
+  gsap.fromTo(['#itop', '.ic-c', '#skip'], { opacity: 0 }, { opacity: 1, duration: .5, stagger: .04 });
+  const WORD = words.map(w => w.textContent); words.forEach(w => w.textContent = '');
+  let t0 = performance.now(), te = built + 1.15, ex = null, fin = false;
+  const skip = () => { const t = (performance.now() - t0) / 1000; if (t < te) te = Math.max(t, .3); };
   el.addEventListener('pointerdown', skip); addEventListener('keydown', skip, { once: true });
   const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2, e4 = u => u < .5 ? 8 * u ** 4 : 1 - Math.pow(-2 * u + 2, 4) / 2;
+  const centre = l => { const r = l.querySelector('svg').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+  function exit() {
+    // put the hero in its final state (still invisible) and measure where everything has to land
+    gsap.set('.hero h1 .wd > span', { yPercent: 0 }); gsap.set('.chainrow', { y: 0, opacity: 1 }); gsap.killTweensOf(IL); $$('#ilogos .il span').forEach(s => s.style.display = 'none'); const L0 = IL.map(centre);
+    const r = $('.router').getBoundingClientRect(); ex = { r, hc: r.width / 125, ox, oy, cs }; P.forEach(p => { if (p.ps) { p.fx = p.px; p.fy = p.py; p.fs = p.ps; } else { [p.fx, p.fy] = L0[p.k]; p.fs = .01; } p.xd = (p.gy - RPX.y0) / RPX.h * .06; });
+    words.forEach((w, i) => w.textContent = WORD[i]);
+    const HW = $$('.hero h1 .wd > span');
+    words.forEach((w, i) => { const a = w.getBoundingClientRect(), b = HW[i].getBoundingClientRect(); gsap.to(w, { x: b.left - a.left, y: b.top - a.top, scale: b.height / a.height, duration: .95, ease: 'expo.inOut', delay: i * .035 }); });
+    const CR = $$('.chainrow svg');
+    IL.forEach((l, i) => { const a = l.querySelector('svg').getBoundingClientRect(), b = CR[i].getBoundingClientRect(); gsap.set(l, { scale: 1, opacity: 1, transformOrigin: '0 0' }); gsap.to(l, { x: '+=' + (b.left - a.left), y: '+=' + (b.top - a.top), scale: b.width / a.width, duration: .95, ease: 'expo.inOut', delay: .05 + i * .04 }); });
+    gsap.to(mark, { scaleX: 0, transformOrigin: '100% 50%', duration: .3, ease: 'power2.in' });
+    gsap.to(['#itop', '.ic-c', '#skip', '#ipct'], { opacity: 0, duration: .25 });
+  }
   function frame(now) {
     if (fin) return; const t = (now - t0) / 1000; x.clearRect(0, 0, W, H);
-    // boot log
-    const nb = Math.min(BOOT.length, Math.floor(t / .2) + 1); boot.innerHTML = BOOT.slice(0, nb).map(([a, cl, b]) => b ? `${esc(a)}<span class="${cl}">${b}</span>` : `<span class="${cl}">${esc(a)}</span>`).join('\n') + (t < te ? '<span class="ok">▌</span>' : '');
-    // exit set-up: remember where every pixel is, and where the page router sits
-    if (t >= te && !ex) { const r = $('.router').getBoundingClientRect(); ex = { r, hc: r.width / 125 }; P.forEach(p => { p.fx = p.px; p.fy = p.py; p.fs = p.ps; p.fc = p.pc; p.xd = Math.random() * .05 + (p.gy - RPX.y0) / RPX.h * .08; });
-      const B = Math.ceil(Math.max(W, H) / 22); blocks = []; for (let by = 0; by < H; by += B) for (let bx = 0; bx < W; bx += B) blocks.push([bx, by, B, .05 + Math.random() * .55]);
-      gsap.to(['#boot', '#ihead', '#skip'], { opacity: 0, duration: .3 }); }
-    const xt = ex ? t - te : -1;
-    // background: near-black, dissolving in blocks on exit
-    x.fillStyle = '#09090b';
-    if (!ex) x.fillRect(0, 0, W, H); else blocks.forEach(([bx, by, B, v]) => { if (xt < v) x.fillRect(bx, by, B + 1, B + 1); });
-    // dot grid with a shockwave when the router is complete
-    const sw = t - built, R = sw * 1300;
-    if (!ex || xt < .5) { for (let gy = 14; gy < H; gy += 26) for (let gx = 14; gx < W; gx += 26) { let a = .12; if (sw > 0 && sw < 1.4) { const dd = Math.abs(Math.hypot(gx - W / 2, gy - H * .4) - R); if (dd < 40) a += (1 - dd / 40) * .7 * (1 - sw / 1.4); }
-      x.fillStyle = `rgba(150,152,160,${a * (ex ? 1 - xt * 2 : 1)})`; x.fillRect(gx, gy, 1.5, 1.5); } }
-    // chain logos, emitting
-    if (!ex || xt < .3) CH.forEach((ch, i) => { const [lx, ly] = ch.o(), k = clamp((t - .12 - i * .1) / .35), out = clamp((t - built + .1) / .4), a = k * (1 - out) * (ex ? 1 - xt / .3 : 1); if (a <= 0) return;
-      const s = 44 * (.6 + .4 * k); x.save(); x.globalAlpha = a; x.strokeStyle = `rgba(${ch.c},.35)`; x.lineWidth = 1.5; x.beginPath(); x.arc(lx, ly, 38 + (t * 40 % 26), 0, 7); x.stroke();
-      x.translate(lx - s / 2, ly - s / 2); x.scale(s / 24, s / 24); if (i === 0) { const g = x.createLinearGradient(0, 24, 24, 0); g.addColorStop(0, '#9945ff'); g.addColorStop(1, '#14f195'); x.fillStyle = g; } else x.fillStyle = `rgb(${ch.c})`; x.fill(logos[i]); x.restore(); });
-    // shockwave ring
-    if (sw > 0 && sw < .9 && !ex) { x.strokeStyle = `rgba(198,255,61,${.5 * (1 - sw / .9)})`; x.lineWidth = 2; x.beginPath(); x.arc(W / 2, H * .4, R, 0, 7); x.stroke(); }
-    // particles
-    const streak = [[], [], []];
+    if (t >= te && !ex) exit();
+    const xt = ex ? t - te : -1, L = IL.map(centre);
+    // dot grid, darkening along the ring when the router is complete
+    const sw = t - built, R = sw * 1300, ga = ex ? Math.max(0, 1 - xt * 2.5) : Math.min(1, t * 2);
+    if (ga > 0) for (let gy = 14; gy < H; gy += 26) for (let gx = 14; gx < W; gx += 26) { let a = .13; if (sw > 0 && sw < 1.4) { const dd = Math.abs(Math.hypot(gx - W / 2, gy - H * .4) - R); if (dd < 44) a += (1 - dd / 44) * .5 * (1 - sw / 1.4); }
+      x.fillStyle = `rgba(20,20,24,${a * ga})`; x.fillRect(gx, gy, 1.6, 1.6); }
+    if (sw > 0 && sw < 1 && !ex) { x.strokeStyle = `rgba(20,20,24,${.22 * (1 - sw)})`; x.lineWidth = 1.5; x.beginPath(); x.arc(W / 2, H * .4, R, 0, 7); x.stroke(); }
+    // the long shadow sweeps out once the router stands, and travels with it on exit
+    const sk = clamp((t - built + .05) / .55); if (sk > 0 && shade.width) {
+      let sox = ox, soy = oy, scs = cs; if (ex) { const u = e4(clamp((xt - .04) / .9)); sox = ex.ox + (ex.r.left - ex.ox) * u; soy = ex.oy + (ex.r.top - ex.oy) * u; scs = ex.cs + (ex.hc - ex.cs) * u; }
+      x.save(); x.beginPath(); const s0 = (RPX.x0 + RPX.y0 + 30) * scs + (250 - RPX.x0 - RPX.y0 - 30) * scs * (ex ? 1 : ease(sk)); x.moveTo(sox, soy); x.lineTo(sox + s0, soy); x.lineTo(sox, soy + s0); x.closePath(); x.clip();
+      x.imageSmoothingEnabled = false; x.drawImage(shade, sox, soy, 125 * scs, 125 * scs); x.restore(); }
+    // pixels
+    const streak = [[], [], []]; let landed = 0;
     for (const p of P) {
-      const tx = ox + p.gx * cs, ty = oy + p.gy * cs;
-      if (!ex) { const u = clamp((t - p.del) / p.dur); if (u <= 0) { const [a, b] = CH[p.k].o(); p.px = a; p.py = b; p.ps = 0; p.pc = 'rgba(0,0,0,0)'; continue; }
-        const [sx, sy] = CH[p.k].o(), e = ease(u), mx = (sx + tx) / 2 - (ty - sy) * p.bend, my = (sy + ty) / 2 + (tx - sx) * p.bend;
-        const nx = (1 - e) * (1 - e) * sx + 2 * (1 - e) * e * mx + e * e * tx, ny = (1 - e) * (1 - e) * sy + 2 * (1 - e) * e * my + e * e * ty;
-        if (u < 1) streak[p.k].push(p.px, p.py, nx, ny);
-        const landed = t - p.del - p.dur; p.pc = u < 1 ? (u < .7 ? `rgb(${CH[p.k].c})` : mix(CH[p.k].c, p.n, (u - .7) / .3)) : landed < .3 ? mix(WH, p.n, landed / .3) : `rgb(${p.n})`;
-        p.px = nx; p.py = ny; p.ps = u < 1 ? Math.max(2, cs * (.45 + .55 * e)) : cs; }
-      else { const u = e4(clamp((xt - p.xd) / .85)), hx = ex.r.left + p.gx * ex.hc, hy = ex.r.top + p.gy * ex.hc;
-        p.px = p.fx + (hx - p.fx) * u; p.py = p.fy + (hy - p.fy) * u; p.ps = p.fs + (ex.hc - p.fs) * u; p.pc = u > 0 ? mix(p.n, p.l, u) : p.fc; }
-      x.fillStyle = p.pc; x.fillRect(p.px, p.py, p.ps + .5, p.ps + .5);
+      if (!ex) { const tx = ox + p.gx * cs, ty = oy + p.gy * cs, u = clamp((t - p.del) / p.dur); if (u <= 0) continue; if (p.sx == null) { [p.sx, p.sy] = L[p.k]; p.px = p.sx; p.py = p.sy; }
+        const e = ease(u), mx = (p.sx + tx) / 2 - (ty - p.sy) * p.bend, my = (p.sy + ty) / 2 + (tx - p.sx) * p.bend;
+        const nx = (1 - e) ** 2 * p.sx + 2 * (1 - e) * e * mx + e * e * tx, ny = (1 - e) ** 2 * p.sy + 2 * (1 - e) * e * my + e * e * ty;
+        if (u < 1) streak[p.k].push(p.px, p.py, nx, ny); else landed++;
+        const since = t - p.del - p.dur; p.pc = u < 1 ? `rgb(${COL[p.k]})` : since < .35 ? mix(COL[p.k], p.l, since / .35) : `rgb(${p.l})`;
+        p.px = nx; p.py = ny; p.ps = u < 1 ? Math.max(2, cs * (.4 + .6 * e)) : cs; }
+      else { if (!p.fs) continue; const u = e4(clamp((xt - p.xd) / .9)), hx = ex.r.left + p.gx * ex.hc, hy = ex.r.top + p.gy * ex.hc;
+        p.px = p.fx + (hx - p.fx) * u; p.py = p.fy + (hy - p.fy) * u; p.ps = p.fs + (ex.hc - p.fs) * u; p.pc = `rgb(${p.l})`; }
+      x.fillStyle = p.pc; const pz = ex ? p.ps + 1 : p.ps + .4; x.fillRect(p.px, p.py, pz, pz);
     }
-    x.lineWidth = 1.2; streak.forEach((arr, k) => { if (!arr.length) return; x.strokeStyle = `rgba(${CH[k].c},.45)`; x.beginPath(); for (let i = 0; i < arr.length; i += 4) { x.moveTo(arr[i], arr[i + 1]); x.lineTo(arr[i] + (arr[i] - arr[i + 2]) * 2.5, arr[i + 1] + (arr[i + 1] - arr[i + 3]) * 2.5); } x.stroke(); });
-    // antenna tips glow once built
-    if (sw > 0 && !ex) [[47, 28.5, 0], [62, 22.5, 1], [77, 28.5, 2]].forEach(([gx, gy, k]) => { const ph = (sw * .9 + k * .33) % 1; x.strokeStyle = `rgba(${CH[k].c},${.8 * (1 - ph)})`; x.lineWidth = 2; x.beginPath(); x.arc(ox + gx * cs, oy + gy * cs, cs * (2 + ph * 14), 0, 7); x.stroke(); });
-    // headline decodes under the router
-    if (!ex) { const k = clamp((t - built + .35) / .8), r = Math.floor(k * WORD.length); iw.textContent = k <= 0 ? '' : WORD.slice(0, r) + WORD.slice(r).replace(/[^ ]/g, () => GLY[Math.random() * GLY.length | 0]); if (t > built + .5) $('#isub').style.opacity = clamp((t - built - .5) / .5); }
-    // hand over to the page
-    if (ex && xt > .45 && !called) { called = true; done(); }
-    if (ex && xt > 1.05) { fin = true; document.body.classList.remove('intro'); lenis && lenis.start(); try { sessionStorage.setItem('0mni2', '1'); } catch { }
-      removeEventListener('resize', size); gsap.to(el, { opacity: 0, duration: .35, delay: .1, onComplete: () => el.remove() }); return; }
+    x.lineWidth = 1.3; streak.forEach((a, k) => { if (!a.length) return; x.strokeStyle = `rgba(${COL[k]},.4)`; x.beginPath(); for (let i = 0; i < a.length; i += 4) { x.moveTo(a[i], a[i + 1]); x.lineTo(a[i] + (a[i] - a[i + 2]) * 2.6, a[i + 1] + (a[i + 1] - a[i + 3]) * 2.6); } x.stroke(); });
+    // antenna tips ping once it stands
+    if (sw > 0 && !ex) [[47, 28.5, 0], [62, 22.5, 1], [77, 28.5, 2]].forEach(([gx, gy, k], i) => { const ph = (sw * .9 + i * .33) % 1; x.strokeStyle = `rgba(${COL[k]},${.85 * (1 - ph)})`; x.lineWidth = 2; x.beginPath(); x.arc(ox + gx * cs, oy + gy * cs, cs * (2 + ph * 12), 0, 7); x.stroke(); });
+    // routing counter, headline decode, lime marker under "no trace."
+    if (!ex) { pct.textContent = 'routing ' + String(Math.round(landed / P.length * 100)).padStart(3, '0') + '%';
+      const k = clamp((t - built + .3) / .75); let n = Math.floor(k * WORD.join(' ').length);
+      words.forEach((w, i) => { const s = WORD[i], r = Math.max(0, Math.min(s.length, n)); n -= s.length + 1; w.textContent = k <= 0 ? '' : s.slice(0, r) + s.slice(r).replace(/./g, () => GLY[Math.random() * GLY.length | 0]); });
+      if (t > built + .5 && !mark.dataset.on) { mark.dataset.on = 1; const hr = head.getBoundingClientRect(), a = words[2].getBoundingClientRect(), b = words[3].getBoundingClientRect();
+        Object.assign(mark.style, { left: (a.left - hr.left - 6) + 'px', width: (b.right - a.left + 12) + 'px', top: (a.top - hr.top + a.height * .55) + 'px', height: (a.height * .38) + 'px' }); gsap.to(mark, { scaleX: 1, duration: .4, ease: 'power3.out' }); } }
+    // hand-over: everything is in its hero spot, so swap the intro for the real page in one frame
+    if (ex && xt > 1.02) { fin = true; removeEventListener('resize', size);
+      const hold = $$('.router, .hero h1, .chainrow'); hold.forEach(e => e.style.transition = 'none');
+      document.body.classList.remove('intro'); void document.body.offsetHeight; el.remove(); lenis && lenis.start(); try { sessionStorage.setItem('0mni3', '1'); } catch { }
+      requestAnimationFrame(() => hold.forEach(e => e.style.transition = '')); done(true); return; }
     requestAnimationFrame(frame);
   }
   (document.fonts ? document.fonts.load('700 40px JB') : Promise.resolve()).catch(() => { }).then(() => { t0 = performance.now(); requestAnimationFrame(frame); });
@@ -125,8 +145,8 @@ function intro(done) {
 function counters() { $$('.hstats b').forEach((b, i) => { const n = +b.dataset.n, o = { v: n ? 0 : 99 }; gsap.to(o, { v: n, duration: n ? 1.2 : 1.6, delay: .2 + i * .12, ease: 'power3.out', onUpdate: () => b.textContent = Math.round(o.v) }); }); }
 
 // ------------------------------------------------ reveals, magnetic buttons, tilt, cursor
-function motion() {
-  gsap.to('.hero h1 .wd > span', { yPercent: 0, duration: 1.1, ease: 'expo.out', stagger: .07 });
+function motion(fromIntro) {
+  if (fromIntro) gsap.set('.hero h1 .wd > span', { yPercent: 0 }); else gsap.to('.hero h1 .wd > span', { yPercent: 0, duration: 1.1, ease: 'expo.out', stagger: .07 });
   ScrollTrigger.batch('.rv', { start: 'top 90%', once: true, onEnter: els => gsap.to(els, { opacity: 1, y: 0, duration: 1, ease: 'expo.out', stagger: .08 }) });
   $$('.split').forEach(h => { if (h.closest('.hero')) return; gsap.to(h.querySelectorAll('.wd > span'), { yPercent: 0, duration: 1, ease: 'expo.out', stagger: .05, scrollTrigger: { trigger: h, start: 'top 88%', once: true } }); });
   $$('.eyebrow').forEach(e => ScrollTrigger.create({ trigger: e, start: 'top 92%', once: true, onEnter: () => scramble(e) }));
@@ -236,5 +256,5 @@ $$('.faq details').forEach(d => { const s = d.querySelector('summary'), p = d.qu
 
 // ------------------------------------------------ start
 duel(); howPin(); panels(); ctaStreams();
-intro(() => { motion(); ScrollTrigger.refresh(); });
+intro(f => { motion(f); ScrollTrigger.refresh(); });
 })();
