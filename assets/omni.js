@@ -47,82 +47,92 @@ function scramble(el, dur = .7) {
     el.textContent = txt.slice(0, r) + txt.slice(r).replace(/[^\s·]/g, () => GLY[Math.random() * GLY.length | 0]); if (k < 1) requestAnimationFrame(f); })(t0);
 }
 
-// ------------------------------------------------ intro (white, no text): three chains build the router, then router and logos fly into the hero
+// ------------------------------------------------ intro (white, no text): one pixel splits into three chains, they print the router, it flies into the hero
 function intro(done) {
   const el = $('#intro'), force = /[?&]intro/.test(location.search);
-  const seen = !force && (() => { try { return sessionStorage.getItem('0mni4') === '1'; } catch { return false; } })();
+  const seen = !force && (() => { try { return sessionStorage.getItem('0mni5') === '1'; } catch { return false; } })();
   if (reduced || seen) { el.remove(); return done(false); }
   document.body.classList.add('intro'); scrollTo(0, 0); lenis && lenis.stop();
   const c = $('#ic'), x = c.getContext('2d'), d = Math.min(2, devicePixelRatio || 1); let W, H, cs, ox, oy, CY;
-  const IL = $$('#ilogos .il'), bar = $('#ibar b');
-  const size = () => { W = innerWidth; H = innerHeight; c.width = W * d; c.height = H * d; x.setTransform(d, 0, 0, d, 0, 0); CY = H * .46;
-    cs = Math.max(3, Math.floor(Math.min(W * .6, H * .42, 450) / RPX.w)); ox = Math.round(W / 2 - (RPX.x0 + RPX.w / 2) * cs); oy = Math.round(CY - (RPX.y0 + RPX.h / 2) * cs); };
-  size(); addEventListener('resize', size);
+  const IL = $$('#ilogos .il');
+  const SRC = [() => [W * .14, CY], () => [W * .5, H * .87], () => [W * .86, CY]];
+  const size = () => { W = innerWidth; H = innerHeight; c.width = W * d; c.height = H * d; CY = H * .45;
+    cs = Math.max(3, Math.floor(Math.min(W * .6, H * .42, 450) / RPX.w)); ox = Math.round(W / 2 - (RPX.x0 + RPX.w / 2) * cs); oy = Math.round(CY - (RPX.y0 + RPX.h / 2) * cs);
+    IL.forEach((l, i) => { const [a, b] = SRC[i](); gsap.set(l, { xPercent: -50, yPercent: -50, x: a, y: b }); }); };
+  IL.forEach(l => gsap.set(l, { opacity: 0, scale: .2 })); size(); addEventListener('resize', size);
   // the shadow, cut out of the page's own router image so the hand-off matches pixel for pixel
   const shade = document.createElement('canvas'); shade.width = shade.height = 125; const img = new Image(); img.src = '/assets/router.png';
   img.onload = () => { const s = shade.getContext('2d'); s.imageSmoothingEnabled = false; s.drawImage(img, 0, 0, 125, 125); const id = s.getImageData(0, 0, 125, 125);
     for (let i = 3; i < id.data.length; i += 4) if (id.data[i] > 200) id.data[i] = 0; s.putImageData(id, 0, 0); };
-  // pixels: each one leaves a chain logo in that chain's colour and lands as graphite
-  const COL = [hex('9945ff'), hex('f0b90b'), hex('8fbf1c')], P = [];
+  // pixels: printed bottom-up, each one flying in a ribbon from its chain and landing as graphite
+  const COL = [hex('9945ff'), hex('f0b90b'), hex('8fbf1c')], BEND = [.22, .16, -.22], LCD = hex('0f1310'), WHITE = [255, 255, 255], P = [];
   for (let i = 0; i < RPX.d.length; i++) { const ch = RPX.d[i]; if (ch === '.') continue; const [, l] = RPX.p['ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(ch)];
-    const gx = RPX.x0 + i % RPX.w, gy = RPX.y0 + (i / RPX.w | 0); let k = gx < 53 ? 0 : gx < 74 ? 1 : 2; if (Math.random() < .2) k = Math.random() * 3 | 0;
-    P.push({ gx, gy, l: hex(l), k, del: .62 + Math.random() * .72 + (gy - RPX.y0) / RPX.h * .16, dur: .5 + Math.random() * .3, bend: (Math.random() - .5) * .8, sx: null }); }
+    const gx = RPX.x0 + i % RPX.w, gy = RPX.y0 + (i / RPX.w | 0), yf = (gy - RPX.y0) / RPX.h; let k = gx < 53 ? 0 : gx < 74 ? 1 : 2; if (Math.random() < .15) k = Math.random() * 3 | 0;
+    P.push({ gx, gy, l: hex(l), ink: l === 'c6ff3d', k, del: .8 + (1 - yf) * .95 + Math.random() * .22, dur: .45 + Math.random() * .2, bend: BEND[k] + (Math.random() - .5) * .14, sx: null }); }
   const built = Math.max(...P.map(p => p.del + p.dur));
-  // logos: a row in the middle, then out to the three sides to send
-  const row = i => [W / 2 + (i - 1) * Math.min(120, W * .22), CY];
-  const side = [() => [W * .13, CY], () => [W * .5, H * .88], () => [W * .87, CY]];
-  IL.forEach((l, i) => { const [a, b] = row(i); gsap.set(l, { xPercent: -50, yPercent: -50, x: a, y: b, opacity: 0, scale: .4 }); });
-  gsap.to(IL, { opacity: 1, scale: 1, duration: .45, ease: 'back.out(2.2)', stagger: .07, delay: .08 });
-  IL.forEach((l, i) => { const [a, b] = side[i](); gsap.to(l, { x: a, y: b, duration: .5, ease: 'power3.inOut', delay: .48 }); });
-  gsap.to('.ic-c', { opacity: .45, duration: .5, stagger: .05 }); gsap.to('#ibar', { opacity: 1, duration: .4, delay: .3 });
-  let t0 = performance.now(), te = built + .75, ex = null, fin = false;
+  let t0 = 0, te = built + .9, ex = null, fin = false, popped = false;
   const skip = () => { const t = (performance.now() - t0) / 1000; if (t < te) te = Math.max(t, .3); };
   el.addEventListener('pointerdown', skip); addEventListener('keydown', skip, { once: true });
-  const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2, e4 = u => u < .5 ? 8 * u ** 4 : 1 - Math.pow(-2 * u + 2, 4) / 2;
+  const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2, e4 = u => u < .5 ? 8 * u ** 4 : 1 - Math.pow(-2 * u + 2, 4) / 2, eo = u => 1 - Math.pow(1 - u, 3);
   const centre = l => { const r = l.querySelector('svg').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
   function exit() {
-    gsap.set('.chainrow', { y: 0, opacity: 1 }); gsap.killTweensOf(IL); const L0 = IL.map(centre);
+    gsap.set('.chainrow', { y: 0, opacity: 1 }); gsap.killTweensOf(IL); IL.forEach(l => gsap.set(l, { opacity: 1, scale: 1 })); const L0 = IL.map(centre);
     const r = $('.router').getBoundingClientRect(); ex = { r, hc: r.width / 125, ox, oy, cs };
     P.forEach(p => { if (p.ps) { p.fx = p.px; p.fy = p.py; p.fs = p.ps; } else { [p.fx, p.fy] = L0[p.k]; p.fs = .01; } p.xd = (p.gy - RPX.y0) / RPX.h * .06; });
     const CR = $$('.chainrow svg');
-    IL.forEach((l, i) => { const a = l.querySelector('svg').getBoundingClientRect(), b = CR[i].getBoundingClientRect(); gsap.set(l, { scale: 1, opacity: 1, transformOrigin: '0 0' }); gsap.to(l, { x: '+=' + (b.left - a.left), y: '+=' + (b.top - a.top), scale: b.width / a.width, duration: .95, ease: 'expo.inOut', delay: .05 + i * .04 }); });
-    gsap.to(['.ic-c', '#ibar'], { opacity: 0, duration: .25 });
+    IL.forEach((l, i) => { const a = l.querySelector('svg').getBoundingClientRect(), b = CR[i].getBoundingClientRect(); gsap.set(l, { transformOrigin: '0 0' }); gsap.to(l, { x: '+=' + (b.left - a.left), y: '+=' + (b.top - a.top), scale: b.width / a.width, duration: .95, ease: 'expo.inOut', delay: .05 + i * .04 }); });
   }
   function frame(now) {
-    if (fin) return; const t = (now - t0) / 1000; x.clearRect(0, 0, W, H);
+    if (fin) return; const t = (now - t0) / 1000;
     if (t >= te && !ex) exit();
-    const xt = ex ? t - te : -1, L = IL.map(centre);
+    const xt = ex ? t - te : -1, sw = t - built;
+    // a slow push-in: the scene settles from 1.045 to 1 by the time the router stands
+    const z = ex ? 1 : 1 + .045 * (1 - eo(clamp(t / (built + .25)))), zc = (v, cc) => (v - cc) / z + cc;
+    x.setTransform(d, 0, 0, d, 0, 0); x.clearRect(0, 0, W, H); x.setTransform(d * z, 0, 0, d * z, d * (W / 2) * (1 - z), d * CY * (1 - z));
     // dot grid, darkening along the ring when the router is complete
-    const sw = t - built, R = sw * 1300, ga = ex ? Math.max(0, 1 - xt * 2.5) : Math.min(1, t * 2);
-    if (ga > 0) for (let gy = 14; gy < H; gy += 26) for (let gx = 14; gx < W; gx += 26) { let a = .13; if (sw > 0 && sw < 1.4) { const dd = Math.abs(Math.hypot(gx - W / 2, gy - CY) - R); if (dd < 44) a += (1 - dd / 44) * .5 * (1 - sw / 1.4); }
+    const R = sw * 1300, ga = ex ? Math.max(0, 1 - xt * 2.5) : Math.min(1, t * 1.6);
+    if (ga > 0) for (let gy = 14; gy < H; gy += 26) for (let gx = 14; gx < W; gx += 26) { let a = .12; if (sw > 0 && sw < 1.4) { const dd = Math.abs(Math.hypot(gx - W / 2, gy - CY) - R); if (dd < 44) a += (1 - dd / 44) * .5 * (1 - sw / 1.4); }
       x.fillStyle = `rgba(20,20,24,${a * ga})`; x.fillRect(gx, gy, 1.6, 1.6); }
-    if (sw > 0 && sw < 1 && !ex) { x.strokeStyle = `rgba(20,20,24,${.22 * (1 - sw)})`; x.lineWidth = 1.5; x.beginPath(); x.arc(W / 2, CY, R, 0, 7); x.stroke(); }
-    // the long shadow sweeps out once the router stands, and travels with it on exit
-    const sk = clamp((t - built + .05) / .5); if (sk > 0) {
+    // opening: one lime pixel blinks, splits into three, each opens into a chain logo
+    const L = IL.map(centre).map(([a, b]) => [zc(a, W / 2), zc(b, CY)]);
+    if (!ex && t < .95) { const ps = Math.max(8, cs * 2);
+      if (t < .42) { if (Math.floor(t / .1) % 2 === 0 || t > .3) { x.fillStyle = '#c6ff3d'; x.fillRect(W / 2 - ps / 2, CY - ps / 2, ps, ps); x.strokeStyle = 'rgba(20,20,24,.85)'; x.lineWidth = 1.5; x.strokeRect(W / 2 - ps / 2, CY - ps / 2, ps, ps); } }
+      else { const u = eo(clamp((t - .42) / .34)); L.forEach(([lx, ly], i) => { if (u >= 1) return; const px = W / 2 + (lx - W / 2) * u, py = CY + (ly - CY) * u, s = ps * (1 - u * .5);
+        x.strokeStyle = `rgba(${COL[i]},.35)`; x.lineWidth = 2; x.beginPath(); x.moveTo(W / 2 + (lx - W / 2) * Math.max(0, u - .25), CY + (ly - CY) * Math.max(0, u - .25)); x.lineTo(px, py); x.stroke();
+        x.fillStyle = `rgb(${COL[i]})`; x.fillRect(px - s / 2, py - s / 2, s, s); });
+        if (u >= 1 && !popped) { popped = true; gsap.to(IL, { opacity: 1, scale: 1, duration: .5, ease: 'back.out(2.4)', stagger: .04 }); } } }
+    // soft halos behind the logos while they send
+    if (!ex && t > .7 && sw < .5) L.forEach(([lx, ly], i) => { const a = clamp((t - .7) / .3) * clamp((.5 - sw) / .5) * (.55 + .45 * Math.sin(t * 7 + i)); const g = x.createRadialGradient(lx, ly, 0, lx, ly, 70);
+      g.addColorStop(0, `rgba(${COL[i]},${.22 * a})`); g.addColorStop(1, `rgba(${COL[i]},0)`); x.fillStyle = g; x.fillRect(lx - 70, ly - 70, 140, 140); });
+    // ring when it stands
+    if (sw > 0 && sw < 1 && !ex) { x.strokeStyle = `rgba(20,20,24,${.2 * (1 - sw)})`; x.lineWidth = 1.5; x.beginPath(); x.arc(W / 2, CY, R, 0, 7); x.stroke(); }
+    // the long shadow sweeps out, then travels with the router on exit
+    const sk = clamp((t - built + .05) / .55); if (sk > 0) {
       let sox = ox, soy = oy, scs = cs; if (ex) { const u = e4(clamp((xt - .03) / .9)); sox = ex.ox + (ex.r.left - ex.ox) * u; soy = ex.oy + (ex.r.top - ex.oy) * u; scs = ex.cs + (ex.hc - ex.cs) * u; }
       x.save(); x.beginPath(); const s0 = (RPX.x0 + RPX.y0 + 30) * scs + (250 - RPX.x0 - RPX.y0 - 30) * scs * (ex ? 1 : ease(sk)); x.moveTo(sox, soy); x.lineTo(sox + s0, soy); x.lineTo(sox, soy + s0); x.closePath(); x.clip();
       x.imageSmoothingEnabled = false; x.drawImage(shade, sox, soy, 125 * scs, 125 * scs); x.restore(); }
     // pixels
-    const streak = [[], [], []]; let landed = 0;
+    const streak = [[], [], []], sheen = sw > .15 && sw < .8 && !ex ? 40 + (sw - .15) / .65 * 170 : -99, lcdOn = sw > .5 || (sw > .25 && Math.floor(sw * 22) % 2 === 0);
     for (const p of P) {
       if (!ex) { const tx = ox + p.gx * cs, ty = oy + p.gy * cs, u = clamp((t - p.del) / p.dur); if (u <= 0) continue; if (p.sx == null) { [p.sx, p.sy] = L[p.k]; p.px = p.sx; p.py = p.sy; }
         const e = ease(u), mx = (p.sx + tx) / 2 - (ty - p.sy) * p.bend, my = (p.sy + ty) / 2 + (tx - p.sx) * p.bend;
         const nx = (1 - e) ** 2 * p.sx + 2 * (1 - e) * e * mx + e * e * tx, ny = (1 - e) ** 2 * p.sy + 2 * (1 - e) * e * my + e * e * ty;
-        if (u < 1) streak[p.k].push(p.px, p.py, nx, ny); else landed++;
-        const since = t - p.del - p.dur; p.pc = u < 1 ? `rgb(${COL[p.k]})` : since < .35 ? mix(COL[p.k], p.l, since / .35) : `rgb(${p.l})`;
+        if (u < 1) streak[p.k].push(p.px, p.py, nx, ny);
+        const since = t - p.del - p.dur; let col = p.ink && !lcdOn && u >= 1 ? LCD : p.l;
+        if (u < 1) p.pc = `rgb(${COL[p.k]})`; else if (since < .3) p.pc = mix(COL[p.k], col, since / .3);
+        else { const b = sheen > 0 ? Math.exp(-(((p.gx + p.gy) - sheen) ** 2) / 90) * .55 : 0; p.pc = b > .02 ? mix(col, WHITE, b) : `rgb(${col})`; }
         p.px = nx; p.py = ny; p.ps = u < 1 ? Math.max(2, cs * (.4 + .6 * e)) : cs; }
       else { if (!p.fs) continue; const u = e4(clamp((xt - p.xd) / .9)), hx = ex.r.left + p.gx * ex.hc, hy = ex.r.top + p.gy * ex.hc;
         p.px = p.fx + (hx - p.fx) * u; p.py = p.fy + (hy - p.fy) * u; p.ps = p.fs + (ex.hc - p.fs) * u; p.pc = `rgb(${p.l})`; }
       x.fillStyle = p.pc; const pz = ex ? p.ps + 1 : p.ps + .4; x.fillRect(p.px, p.py, pz, pz);
     }
-    x.lineWidth = 1.3; streak.forEach((a, k) => { if (!a.length) return; x.strokeStyle = `rgba(${COL[k]},.4)`; x.beginPath(); for (let i = 0; i < a.length; i += 4) { x.moveTo(a[i], a[i + 1]); x.lineTo(a[i] + (a[i] - a[i + 2]) * 2.6, a[i + 1] + (a[i + 1] - a[i + 3]) * 2.6); } x.stroke(); });
-    // antenna tips ping once it stands
-    if (sw > 0 && !ex) [[47, 28.5, 0], [62, 22.5, 1], [77, 28.5, 2]].forEach(([gx, gy, k], i) => { const ph = (sw * .9 + i * .33) % 1; x.strokeStyle = `rgba(${COL[k]},${.85 * (1 - ph)})`; x.lineWidth = 2; x.beginPath(); x.arc(ox + gx * cs, oy + gy * cs, cs * (2 + ph * 12), 0, 7); x.stroke(); });
-    if (!ex) bar.style.transform = `scaleX(${landed / P.length})`;
+    x.lineWidth = 1.2; streak.forEach((a, k) => { if (!a.length) return; x.strokeStyle = `rgba(${COL[k]},.38)`; x.beginPath(); for (let i = 0; i < a.length; i += 4) { x.moveTo(a[i], a[i + 1]); x.lineTo(a[i] + (a[i] - a[i + 2]) * 2.8, a[i + 1] + (a[i + 1] - a[i + 3]) * 2.8); } x.stroke(); });
+    // antenna tips ping, one chain after another
+    if (sw > .1 && !ex) [[47, 28.5, 0], [62, 22.5, 1], [77, 28.5, 2]].forEach(([gx, gy, k], i) => { const q = sw - .1 - i * .12; if (q < 0) return; const ph = (q * .9) % 1; x.strokeStyle = `rgba(${COL[k]},${.85 * (1 - ph)})`; x.lineWidth = 2; x.beginPath(); x.arc(ox + gx * cs, oy + gy * cs, cs * (2 + ph * 12), 0, 7); x.stroke(); });
     // hand-over: router and logos are in their hero spots, so swap the intro for the real page in one frame
     if (ex && xt > 1.02) { fin = true; removeEventListener('resize', size);
       const hold = $$('.router, .chainrow'); hold.forEach(e => e.style.transition = 'none');
-      document.body.classList.remove('intro'); void document.body.offsetHeight; el.remove(); lenis && lenis.start(); try { sessionStorage.setItem('0mni4', '1'); } catch { }
+      document.body.classList.remove('intro'); void document.body.offsetHeight; el.remove(); lenis && lenis.start(); try { sessionStorage.setItem('0mni5', '1'); } catch { }
       requestAnimationFrame(() => hold.forEach(e => e.style.transition = '')); done(true); return; }
     requestAnimationFrame(frame);
   }
@@ -132,7 +142,7 @@ function intro(done) {
 // ------------------------------------------------ hero numbers
 function counters() { $$('.hstats b').forEach((b, i) => { const n = +b.dataset.n, o = { v: n ? 0 : 99 }; gsap.to(o, { v: n, duration: n ? 1.2 : 1.6, delay: .2 + i * .12, ease: 'power3.out', onUpdate: () => b.textContent = Math.round(o.v) }); }); }
 
-// ------------------------------------------------ reveals, magnetic buttons, tilt, cursor
+// ------------------------------------------------ reveals, magnetic buttons, tilt
 function motion(fromIntro) {
   gsap.to('.hero h1 .wd > span', { yPercent: 0, duration: 1.1, ease: 'expo.out', stagger: .07, delay: fromIntro ? .05 : 0 });
   ScrollTrigger.batch('.rv', { start: 'top 90%', once: true, onEnter: els => gsap.to(els, { opacity: 1, y: 0, duration: 1, ease: 'expo.out', stagger: .08 }) });
@@ -149,9 +159,6 @@ function motion(fromIntro) {
     $$('.mag').forEach(b => { b.addEventListener('pointermove', e => { const r = b.getBoundingClientRect(); gsap.to(b, { x: (e.clientX - r.left - r.width / 2) * .25, y: (e.clientY - r.top - r.height / 2) * .35, duration: .4, ease: 'power3.out' }); }); b.addEventListener('pointerleave', () => gsap.to(b, { x: 0, y: 0, duration: .6, ease: 'elastic.out(1,.4)' })); });
     $$('.tilt').forEach(c => { c.addEventListener('pointermove', e => { const r = c.getBoundingClientRect(), px = (e.clientX - r.left) / r.width - .5, py = (e.clientY - r.top) / r.height - .5; gsap.to(c, { rotateY: px * 7, rotateX: -py * 7, y: -4, transformPerspective: 900, duration: .5, ease: 'power3.out' }); }); c.addEventListener('pointerleave', () => gsap.to(c, { rotateY: 0, rotateX: 0, y: 0, duration: .8, ease: 'expo.out' })); });
     const art = $('#art'); addEventListener('pointermove', e => { const px = e.clientX / innerWidth - .5, py = e.clientY / innerHeight - .5; gsap.to(art, { x: px * 18, y: py * 14, rotate: px * 2, duration: 1.2, ease: 'power3.out' }); });
-    const cur = $('#cur'), qx = gsap.quickTo(cur, 'x', { duration: .35, ease: 'power3' }), qy = gsap.quickTo(cur, 'y', { duration: .35, ease: 'power3' });
-    addEventListener('pointermove', e => { qx(e.clientX); qy(e.clientY); cur.classList.add('on'); }); document.addEventListener('pointerleave', () => cur.classList.remove('on'));
-    document.addEventListener('pointerover', e => cur.classList.toggle('big', !!e.target.closest('a, button, summary, .steps li, input')));
   }
 }
 
@@ -224,21 +231,63 @@ function howPin() {
   setStep(0);
 }
 
-// ------------------------------------------------ live: new pump.fun launches through pr1v
+// ------------------------------------------------ live: new pump.fun launches
 const seenM = new Set(); let lastAt = 0;
 async function live() {
-  try { const r = await fetch('https://pr1v.vercel.app/api/pr1v?a=trenches&tab=new'); const j = await r.json(); if (!r.ok || j.error) throw new Error(j.error || r.status);
+  try { const r = await fetch('/api/o?a=trenches&tab=new'); const j = await r.json(); if (!r.ok || j.error) throw new Error(j.error || r.status);
     const C = (j.coins || []).sort((a, b) => Date.parse(b.created || 0) - Date.parse(a.created || 0)).slice(0, 8); lastAt = Date.now();
     $('#lrows').innerHTML = (C.length ? '<div class="lrow lhd"><span></span><span>coin · age</span><span>mcap</span><span>holders</span><span>dev</span></div>' : '') + C.map(c => { const a = c.audit || {}, fresh = seenM.size && !seenM.has(c.mint) ? ' fresh' : ''; const bd = a.devMints > 20 ? `<span class="bd r">serial · ${nf(a.devMints)} coins</span>` : a.devMints != null && a.devMints <= 1 ? '<span class="bd g">first coin</span>' : a.devMints != null ? `<span class="bd">${a.devMints} coins</span>` : '<span class="bd">dev unknown</span>';
-      return `<a class="lrow${fresh}" href="https://pr1v.vercel.app/?w=${esc(c.dev || '')}" target="_blank" rel="noopener" title="open the dev in pr1v">${c.icon ? `<img src="${esc(c.icon)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=&quot;ci&quot;>${esc((c.sym || '?')[0])}</span>'">` : `<span class="ci">${esc((c.sym || '?')[0])}</span>`}<span class="nm"><b>${esc(c.name || c.sym || '?')}</b><span>$${esc(c.sym || '?')} · ${age(c.created)}</span></span><span>${usd(c.mcap)}</span><span>${nf(c.holders)}</span>${bd}</a>`; }).join('') || '<p class="muted">waiting for the next launch…</p>';
+      return `<a class="lrow${fresh}" href="#opsec" data-scan="${esc(c.dev || '')}" title="scan this dev">${c.icon ? `<img src="${esc(c.icon)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=&quot;ci&quot;>${esc((c.sym || '?')[0])}</span>'">` : `<span class="ci">${esc((c.sym || '?')[0])}</span>`}<span class="nm"><b>${esc(c.name || c.sym || '?')}</b><span>$${esc(c.sym || '?')} · ${age(c.created)}</span></span><span>${usd(c.mcap)}</span><span>${nf(c.holders)}</span>${bd}</a>`; }).join('') || '<p class="muted">waiting for the next launch…</p>';
     C.forEach(c => seenM.add(c.mint)); }
   catch { if (!lastAt) $('#lrows').innerHTML = '<p class="muted">pump.fun data is not answering right now. retrying…</p>'; }
 }
 setInterval(() => { $('#lts').textContent = lastAt ? 'updated ' + Math.round((Date.now() - lastAt) / 1000) + 's ago' : ''; }, 1000);
 let liveOn = false; ScrollTrigger.create({ trigger: '#live', start: 'top 120%', onEnter: () => { if (liveOn) return; liveOn = true; live(); setInterval(() => { if (!document.hidden) live(); }, 8000); } });
 
-// ------------------------------------------------ scan box: opens pr1v with the wallet
-$('#scanF').addEventListener('submit', e => { e.preventDefault(); const v = $('#scanI').value.trim(); if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(v)) { $('#scanI').value = ''; $('#scanI').placeholder = 'that is not a Solana address'; return; } open('https://pr1v.vercel.app/?w=' + v, '_blank', 'noopener'); });
+// ------------------------------------------------ opsec scan, right on the page
+const short = w => w.slice(0, 4) + '…' + w.slice(-4), pad2 = n => String(n).padStart(2, '0');
+const getj = async q => { const r = await fetch('/api/o?' + q); const j = await r.json().catch(() => ({ error: 'the scanner sent a bad answer' })); if (!r.ok || (j && j.error)) throw new Error((j && j.error) || 'error ' + r.status); return j; };
+const row = (k, cls, html) => { const li = $(`.checks li[data-k="${k}"]`); li.classList.remove('wait', 'ok', 'warn', 'bad', 'na'); li.classList.add(cls); li.querySelector('.a').innerHTML = html; };
+let scanId = 0;
+function scan(w) {
+  const id = ++scanId, live = () => id === scanId, hits = { bad: 0, warn: 0 }, flag = c => { if (c in hits) hits[c]++; };
+  $('.rep').classList.add('on'); gsap.set('.checks li', { opacity: 1, y: 0 });
+  $$('.checks li').forEach(li => { li.classList.remove('ok', 'warn', 'bad', 'na'); li.classList.add('wait'); li.querySelector('.a').innerHTML = '<i class="ldots"><i></i><i></i><i></i></i>'; });
+  const sum = $('#sumr'); sum.className = 'sumr on'; sum.innerHTML = `scanning <b>${short(w)}</b>`;
+  const fail = (ks, e) => { if (live()) ks.forEach(k => row(k, 'na', esc(e.message))); };
+  const jobs = [
+    getj('a=acct&w=' + w).then(a => { if (!live()) return; const N = (a.names && a.names.names) || [];
+      if (N.length) { row('names', 'bad', `<b>${N.length} name${N.length > 1 ? 's' : ''}</b> ${N.length > 1 ? 'point' : 'points'} here: ${N.slice(0, 3).map(esc).join(', ')}`); flag('bad'); } else row('names', 'ok', 'no .sol names point here');
+      const top = (a.tokens || []).filter(t => t.usd > 1).slice(0, 3).map(t => '$' + esc(t.sym || '?')).join(' · ');
+      row('bags', 'na', `<b>${nf(a.sol, 2)} SOL</b> · ${usd(a.usd)} in view${a.tokenCount ? ` · ${nf(a.tokenCount)} tokens` : ''}${top ? ` · top ${top}` : ''}`); }).catch(e => fail(['names', 'bags'], e)),
+    getj('a=trace&w=' + w).then(ch => { if (!live()) return; const f = ch[0] || {};
+      if (f.busy) return row('funding', 'na', `too much history to trace back (${nf(f.count)}+ transactions)`);
+      if (!f.funder) return row('funding', 'ok', 'no incoming SOL found in its first transactions');
+      const hops = ch.filter(h => h.funder).length, end = ch[ch.length - 1], cex = !!(end && end.busy);
+      row('funding', cex ? 'bad' : 'warn', `first SOL came from <b>${short(f.funder)}</b>${hops > 1 ? ` · traced ${hops} hops back` : ''}${cex ? ' · the trail ends at a very busy wallet, likely an exchange' : ''}`); flag(cex ? 'bad' : 'warn'); }).catch(e => fail(['funding'], e)),
+    getj('a=sigs&w=' + w + '&limit=1000').then(S => { if (!live()) return; const T = S.map(s => s.t).filter(Boolean);
+      if (T.length < 24) return row('clock', 'na', `only ${T.length} timed transactions, too few to read a clock`);
+      const span = (T[0] - T[T.length - 1]) / 3600; if (span < 36) return row('clock', 'na', `all ${T.length} recent transactions fall within ${Math.max(1, Math.round(span))}h, too short to read a clock`);
+      const h = Array(24).fill(0); T.forEach(v => h[new Date(v * 1000).getUTCHours()]++); let st = 0, lo = 1e9;
+      for (let s = 0; s < 24; s++) { let v = 0; for (let k = 0; k < 6; k++) v += h[(s + k) % 24]; if (v < lo) { lo = v; st = s; } }
+      const mx = Math.max(...h), bars = '<span class="clk">' + h.map((v, i) => `<i class="${(i - st + 24) % 24 < 6 ? 'q' : ''}" style="height:${Math.max(6, v / mx * 100)}%"></i>`).join('') + '</span>';
+      let off = (4 - (st + 3) % 24 + 24) % 24; if (off > 12) off -= 24;
+      if (lo / T.length < .05) { row('clock', 'warn', `goes quiet ${pad2(st)}:00–${pad2((st + 6) % 24)}:00 UTC · reads like UTC${off >= 0 ? '+' : ''}${off}${bars}`); flag('warn'); }
+      else row('clock', 'ok', `active around the clock, no clear sleep window${bars}`); }).catch(e => fail(['clock'], e)),
+    getj('a=dev&w=' + w).then(dv => { if (!live()) return; const S = dv.sends || [], C = dv.creates || [];
+      if (S.length) { row('clusters', 'warn', `pays <b>${S.length} wallet${S.length > 1 ? 's' : ''}</b> directly: ${S.slice(0, 3).map(s => short(s.a) + (s.n > 1 ? ` ×${s.n}` : '')).join(', ')}`); flag('warn'); }
+      else row('clusters', 'ok', 'no direct payments to other wallets in its recent history');
+      if (C.length) { const bad = C.length > 3; row('trail', bad ? 'bad' : 'warn', `launched <b>${C.length} coin${C.length > 1 ? 's' : ''}</b> recently: ${C.slice(0, 4).map(c => '$' + esc(c.sym || '?')).join(', ')}`); flag(bad ? 'bad' : 'warn'); }
+      else row('trail', 'ok', 'no coin launches in its recent history'); }).catch(e => fail(['clusters', 'trail'], e)),
+  ];
+  Promise.allSettled(jobs).then(() => { if (!live()) return; const n = hits.bad + hits.warn;
+    sum.className = 'sumr on ' + (hits.bad ? 'bad' : n ? 'warn' : 'ok');
+    sum.innerHTML = n ? `<b>${n} thing${n > 1 ? 's' : ''}</b> ${n > 1 ? 'point' : 'points'} back to ${short(w)}` : `nothing obvious points back to <b>${short(w)}</b>`; });
+}
+$('#scanF').addEventListener('submit', e => { e.preventDefault(); const v = $('#scanI').value.trim();
+  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(v)) { $('#scanI').value = ''; $('#scanI').placeholder = 'that is not a Solana address'; return; }
+  $('#scanI').blur(); scan(v); if (innerWidth <= 860) setTimeout(() => lenis ? lenis.scrollTo('.rep', { offset: -90 }) : $('.rep').scrollIntoView({ behavior: 'smooth' }), 50); });
+$('#lrows').addEventListener('click', e => { const a = e.target.closest('[data-scan]'); if (!a || !a.dataset.scan) return; e.preventDefault(); $('#scanI').value = a.dataset.scan; go('opsec'); scan(a.dataset.scan); });
 
 // ------------------------------------------------ faq: smooth open
 $$('.faq details').forEach(d => { const s = d.querySelector('summary'), p = d.querySelector('p'); s.addEventListener('click', e => { if (reduced) return; e.preventDefault(); if (d.open) { gsap.to(p, { height: 0, opacity: 0, duration: .35, ease: 'power2.inOut', onComplete: () => { d.open = false; gsap.set(p, { clearProps: 'all' }); } }); } else { d.open = true; gsap.from(p, { height: 0, opacity: 0, duration: .45, ease: 'expo.out', clearProps: 'all' }); } }); });
