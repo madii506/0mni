@@ -191,12 +191,12 @@ function panels() {
 function ctaStreams() {
   const c = $('#ctaC'); if (!c || reduced) return; const x = c.getContext('2d'), d = Math.min(2, devicePixelRatio || 1); let W, H, on = false, parts = [];
   const size = () => { const r = c.getBoundingClientRect(); W = r.width; H = r.height; c.width = W * d; c.height = H * d; x.setTransform(d, 0, 0, d, 0, 0); }; size(); addEventListener('resize', size);
-  const CC = ['153,69,255', '240,185,11', '184,230,0'], O = [() => [-20, H * .3 + Math.random() * H * .4], () => [W * .3 + Math.random() * W * .4, H + 20], () => [W + 20, H * .3 + Math.random() * H * .4]];
+  const CC = ['153,69,255', '232,170,0', '120,170,10'], O = [() => [-20, H * .3 + Math.random() * H * .4], () => [W * .3 + Math.random() * W * .4, H + 20], () => [W + 20, H * .3 + Math.random() * H * .4]];
   const spawn = () => { const k = Math.random() * 3 | 0, [sx, sy] = O[k](); parts.push({ k, sx, sy, t: 0, sp: .25 + Math.random() * .35, b: (Math.random() - .5) * .6, px: sx, py: sy }); };
   new IntersectionObserver(es => { on = es[0].isIntersecting; if (on) requestAnimationFrame(f); }).observe(c);
   let last = performance.now();
   function f(now) { if (!on) return; const dt = Math.min(.05, (now - last) / 1000); last = now; x.clearRect(0, 0, W, H);
-    for (let gy = 14; gy < H; gy += 28) for (let gx = 14; gx < W; gx += 28) { x.fillStyle = 'rgba(120,124,116,.13)'; x.fillRect(gx, gy, 1.5, 1.5); }
+    for (let gy = 14; gy < H; gy += 28) for (let gx = 14; gx < W; gx += 28) { x.fillStyle = 'rgba(20,20,24,.1)'; x.fillRect(gx, gy, 1.5, 1.5); }
     for (let i = 0; i < 4; i++) if (parts.length < 230) spawn();
     const cx = W / 2, cy = H * .46; x.lineWidth = 1.5;
     parts = parts.filter(p => { p.t += dt * p.sp; if (p.t >= 1) return false; const e = p.t, mx = (p.sx + cx) / 2 - (cy - p.sy) * p.b, my = (p.sy + cy) / 2 + (cx - p.sx) * p.b;
